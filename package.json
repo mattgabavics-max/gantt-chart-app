@@ -18,7 +18,8 @@
     "start": "npm run start --workspace=server",
     "prisma:generate": "npm run prisma:generate --workspace=server",
     "prisma:migrate": "npm run prisma:migrate --workspace=server",
-    "prisma:studio": "npm run prisma:studio --workspace=server"
+    "prisma:studio": "npm run prisma:studio --workspace=server",
+    "prisma:seed": "npm run prisma:seed --workspace=server"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

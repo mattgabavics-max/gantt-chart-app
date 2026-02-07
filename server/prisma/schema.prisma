@@ -10,54 +10,102 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User model - represents application users
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  ownedProjects      Project[]         @relation("ProjectOwner")
+  projectVersions    ProjectVersion[]  @relation("VersionCreator")
+
+  @@index([email])
+  @@map("users")
+}
+
+// Project model - represents a Gantt chart project
 model Project {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  startDate   DateTime
-  endDate     DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  isPublic  Boolean  @default(false) @map("is_public")
+  ownerId   String   @map("owner_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  tasks       Task[]
+  // Relations
+  owner           User              @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  tasks           Task[]
+  versions        ProjectVersion[]
+  shareLinks      ShareLink[]
 
+  @@index([ownerId])
+  @@index([isPublic])
+  @@index([createdAt])
   @@map("projects")
 }
 
+// ProjectVersion model - stores project snapshots for version history
+model ProjectVersion {
+  id             String   @id @default(uuid())
+  projectId      String   @map("project_id")
+  versionNumber  Int      @map("version_number")
+  snapshotData   Json     @map("snapshot_data") // Stores the complete project state as JSON
+  createdAt      DateTime @default(now()) @map("created_at")
+  createdBy      String   @map("created_by")
+
+  // Relations
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator        User     @relation("VersionCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, versionNumber])
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("project_versions")
+}
+
+// Task model - represents individual tasks in a Gantt chart
 model Task {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  startDate   DateTime
-  endDate     DateTime
-  progress    Int      @default(0) // 0-100
-  status      TaskStatus @default(NOT_STARTED)
-  priority    Priority @default(MEDIUM)
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  name      String
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  color     String   @default("#3B82F6") // Default blue color
+  position  Int      @default(0) // Order of tasks in the project
+  createdAt DateTime @default(now()) @map("created_at")
 
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // Relations
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  parentId    String?
-  parent      Task?    @relation("TaskDependencies", fields: [parentId], references: [id])
-  children    Task[]   @relation("TaskDependencies")
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  @@index([projectId])
+  @@index([position])
+  @@index([startDate])
+  @@index([endDate])
   @@map("tasks")
 }
 
-enum TaskStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED
-  ON_HOLD
-  CANCELLED
+// ShareLink model - allows sharing projects via unique links
+model ShareLink {
+  id         String       @id @default(uuid())
+  projectId  String       @map("project_id")
+  token      String       @unique @default(uuid())
+  accessType AccessType   @map("access_type")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  expiresAt  DateTime?    @map("expires_at") // Null means never expires
+
+  // Relations
+  project    Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([projectId])
+  @@index([expiresAt])
+  @@map("share_links")
 }
 
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
+// Enums
+enum AccessType {
+  READONLY
+  EDITABLE
 }
