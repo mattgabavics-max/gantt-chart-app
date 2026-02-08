@@ -3,6 +3,9 @@ import dotenv from 'dotenv'
 import corsMiddleware from './middleware/cors.js'
 import routes from './routes/index.js'
 import authRoutes from './routes/auth.routes.js'
+import projectRoutes from './routes/project.routes.js'
+import versionRoutes from './routes/version.routes.js'
+import taskRoutes from './routes/task.routes.js'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js'
 import { connectDatabase } from './config/database.js'
 
@@ -27,6 +30,9 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/projects', projectRoutes)
+app.use('/api/projects/:id/versions', versionRoutes)
+app.use('/api', taskRoutes)
 app.use('/api', routes)
 
 // Error handling
@@ -42,6 +48,8 @@ async function startServer() {
       console.log(`🚀 Server is running on http://localhost:${PORT}`)
       console.log(`📊 API available at http://localhost:${PORT}/api`)
       console.log(`🔐 Auth endpoints at http://localhost:${PORT}/api/auth`)
+      console.log(`📁 Project endpoints at http://localhost:${PORT}/api/projects`)
+      console.log(`📋 Task endpoints at http://localhost:${PORT}/api/tasks`)
     })
   } catch (error) {
     console.error('Failed to start server:', error)
