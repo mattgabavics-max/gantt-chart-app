@@ -141,12 +141,15 @@ export interface BulkUpdateTasksDto {
 
 // Project Version DTOs
 export interface CreateProjectVersionDto {
-  projectId: string
+  versionNumber: number
   snapshotData: any
 }
 
 export interface ProjectVersionResponseDto extends ProjectVersion {
-  creator: User
+  project: {
+    id: string
+    name: string
+  }
 }
 
 // Share Link DTOs
@@ -182,6 +185,26 @@ export interface PaginatedResponse<T> {
   page: number
   pageSize: number
   hasMore: boolean
+}
+
+export interface PaginationMeta {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasMore: boolean
+}
+
+export interface ProjectsListResponse {
+  projects: Array<Project & {
+    owner: User
+    tasks: Task[]
+    _count: {
+      tasks: number
+      versions: number
+    }
+  }>
+  pagination: PaginationMeta
 }
 
 // ============================================

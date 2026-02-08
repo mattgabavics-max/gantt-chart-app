@@ -266,6 +266,100 @@ If you encounter import errors:
 - Run `npm install` in the root directory
 - Clear node_modules and reinstall: `rm -rf node_modules package-lock.json && npm install`
 
+## Deployment
+
+This application is configured for easy deployment to production environments.
+
+### Quick Deploy
+
+**Frontend (Vercel)**:
+```bash
+cd client
+vercel --prod
+```
+
+**Backend (Railway)**:
+```bash
+cd server
+railway up
+```
+
+### Deployment Platforms
+
+- **Frontend**: Vercel (recommended) or Netlify
+- **Backend**: Railway (recommended) or Render
+- **Database**: PostgreSQL (provided by Railway/Render)
+- **Monitoring**: Sentry for error tracking
+
+### Configuration Files
+
+- `client/vercel.json` - Vercel configuration
+- `server/Dockerfile` - Docker containerization
+- `server/railway.json` - Railway configuration
+- `render.yaml` - Render configuration
+- `.github/workflows/ci-cd.yml` - GitHub Actions CI/CD
+
+### Environment Variables
+
+Set these in your deployment platform:
+
+**Frontend (Vercel)**:
+- `VITE_API_URL` - Backend API URL
+- `VITE_SENTRY_DSN` - Sentry DSN (optional)
+- `VITE_ENVIRONMENT` - `production` or `staging`
+
+**Backend (Railway/Render)**:
+- `DATABASE_URL` - PostgreSQL connection string
+- `JWT_SECRET` - Secret for JWT tokens
+- `JWT_REFRESH_SECRET` - Secret for refresh tokens
+- `CORS_ORIGIN` - Frontend URL
+- `SENTRY_DSN` - Sentry DSN (optional)
+- `NODE_ENV` - `production`
+
+### CI/CD Pipeline
+
+Automated deployments on push to:
+- `main` branch → Production
+- `develop` branch → Staging
+
+The pipeline includes:
+- ✅ Automated testing (frontend & backend)
+- ✅ Type checking
+- ✅ Linting
+- ✅ Build verification
+- ✅ Deployment to Vercel and Railway
+- ✅ Database migrations
+
+### Monitoring
+
+Error tracking and performance monitoring with Sentry:
+- Frontend: Browser errors and performance
+- Backend: Server errors and API performance
+- Automatic release tracking
+- User session monitoring
+
+### Health Checks
+
+Backend health check endpoints:
+- `/health` - Basic health check
+- `/health/ready` - Readiness check (includes database)
+- `/health/live` - Liveness check
+- `/health/status` - Detailed status
+
+### Complete Deployment Guide
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+Topics covered:
+- Step-by-step deployment for each platform
+- Environment variable configuration
+- Database setup and migrations
+- Custom domain setup
+- CI/CD configuration
+- Monitoring and error tracking
+- Troubleshooting common issues
+- Security best practices
+
 ## Contributing
 
 1. Create a feature branch
