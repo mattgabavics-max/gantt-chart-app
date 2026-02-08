@@ -1,0 +1,99 @@
+### Authentication API Tests
+### Use with REST Client extension in VS Code or similar tools
+
+@baseUrl = http://localhost:5000/api
+@token = your-token-here
+
+###
+# 1. Health Check
+GET {{baseUrl}}/health
+
+###
+# 2. Register New User
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "SecurePass123"
+}
+
+###
+# 3. Register with Invalid Email
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": "SecurePass123"
+}
+
+###
+# 4. Register with Weak Password
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "weak"
+}
+
+###
+# 5. Register Duplicate Email
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePass123"
+}
+
+###
+# 6. Login with Valid Credentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "password123"
+}
+
+###
+# 7. Login with Invalid Credentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "wrongpassword"
+}
+
+###
+# 8. Get Current User (Authenticated)
+# Replace {{token}} with actual token from login/register response
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+###
+# 9. Get Current User (No Token)
+GET {{baseUrl}}/auth/me
+
+###
+# 10. Get Current User (Invalid Token)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer invalid.token.here
+
+###
+# 11. Verify Token
+GET {{baseUrl}}/auth/verify
+Authorization: Bearer {{token}}
+
+###
+# 12. Test Rate Limiting (Run this 6+ times quickly)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
