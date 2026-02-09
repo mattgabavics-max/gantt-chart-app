@@ -4,6 +4,7 @@
 
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { testA11y } from '../../tests/utils/testA11y'
 import { GanttChart } from './GanttChart'
 import { Task } from '../../types/gantt'
 import { createMockTask } from '../../tests/mocks/mockData'
@@ -283,6 +284,37 @@ describe('GanttChart', () => {
       mockTasks.forEach((task) => {
         expect(screen.getByText(task.name)).toBeInTheDocument()
       })
+    })
+
+    it('should have no accessibility violations with tasks', async () => {
+      await testA11y(
+        <GanttChart
+          tasks={mockTasks}
+          timeScale="week"
+          onTaskUpdate={mockOnTaskUpdate}
+        />
+      )
+    })
+
+    it('should have no accessibility violations in empty state', async () => {
+      await testA11y(
+        <GanttChart
+          tasks={[]}
+          timeScale="week"
+          onTaskUpdate={mockOnTaskUpdate}
+        />
+      )
+    })
+
+    it('should have no accessibility violations in readOnly mode', async () => {
+      await testA11y(
+        <GanttChart
+          tasks={mockTasks}
+          timeScale="week"
+          onTaskUpdate={mockOnTaskUpdate}
+          readOnly={true}
+        />
+      )
     })
   })
 })

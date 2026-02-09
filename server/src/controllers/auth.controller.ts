@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import prisma from '../config/database.js'
-import { hashPassword, comparePassword } from '../utils/password.js'
+import { hashPassword, comparePassword, validatePasswordStrength } from '../utils/password.js'
 import { generateToken } from '../utils/jwt.js'
-import { ConflictError, UnauthorizedError } from '../middleware/errorHandler.js'
+import { ConflictError, UnauthorizedError, BadRequestError } from '../middleware/errorHandler.js'
 
 /**
  * Register a new user
@@ -10,6 +10,14 @@ import { ConflictError, UnauthorizedError } from '../middleware/errorHandler.js'
  */
 export async function register(req: Request, res: Response): Promise<void> {
   const { email, password } = req.body
+
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(password)
+  if (!passwordValidation.isValid) {
+    throw new BadRequestError(
+      `Password does not meet security requirements: ${passwordValidation.errors.join(', ')}`
+    )
+  }
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({

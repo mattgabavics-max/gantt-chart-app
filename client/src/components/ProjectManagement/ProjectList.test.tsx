@@ -5,6 +5,7 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { testA11y } from '../../tests/utils/testA11y'
 import { ProjectList } from './ProjectList'
 import { mockProjects } from '../../tests/mocks/mockData'
 
@@ -395,6 +396,40 @@ describe('ProjectList', () => {
 
       expect(screen.getByText(/public/i)).toBeInTheDocument()
       expect(screen.getByText(/private/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Accessibility', () => {
+    it('should have no accessibility violations with projects', async () => {
+      await testA11y(
+        <ProjectList
+          projects={mockProjects}
+          onCreateProject={mockOnCreateProject}
+          onSelectProject={mockOnSelectProject}
+        />
+      )
+    })
+
+    it('should have no accessibility violations in empty state', async () => {
+      await testA11y(
+        <ProjectList
+          projects={[]}
+          onCreateProject={mockOnCreateProject}
+          onSelectProject={mockOnSelectProject}
+          loading={false}
+        />
+      )
+    })
+
+    it('should have no accessibility violations with delete buttons', async () => {
+      await testA11y(
+        <ProjectList
+          projects={mockProjects}
+          onCreateProject={mockOnCreateProject}
+          onSelectProject={mockOnSelectProject}
+          onDeleteProject={mockOnDeleteProject}
+        />
+      )
     })
   })
 })

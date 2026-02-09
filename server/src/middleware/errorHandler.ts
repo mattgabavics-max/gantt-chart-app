@@ -8,9 +8,11 @@ export class AppError extends Error {
   constructor(
     public statusCode: number,
     public message: string,
+    public code: string = 'INTERNAL_ERROR',
     public isOperational: boolean = true
   ) {
     super(message)
+    this.code = code
     Object.setPrototypeOf(this, AppError.prototype)
   }
 }
@@ -20,31 +22,31 @@ export class AppError extends Error {
  */
 export class NotFoundError extends AppError {
   constructor(resource: string = 'Resource') {
-    super(404, `${resource} not found`)
+    super(404, `${resource} not found`, 'NOT_FOUND')
   }
 }
 
 export class UnauthorizedError extends AppError {
   constructor(message: string = 'Unauthorized') {
-    super(401, message)
+    super(401, message, 'UNAUTHORIZED')
   }
 }
 
 export class ForbiddenError extends AppError {
   constructor(message: string = 'Forbidden') {
-    super(403, message)
+    super(403, message, 'FORBIDDEN')
   }
 }
 
 export class BadRequestError extends AppError {
   constructor(message: string = 'Bad request') {
-    super(400, message)
+    super(400, message, 'BAD_REQUEST')
   }
 }
 
 export class ConflictError extends AppError {
   constructor(message: string = 'Conflict') {
-    super(409, message)
+    super(409, message, 'CONFLICT')
   }
 }
 
@@ -63,8 +65,12 @@ export function errorHandler(
   if (error instanceof AppError) {
     res.status(error.statusCode).json({
       success: false,
-      error: error.message,
-      message: error.message,
+      error: {
+        code: error.code,
+        message: error.message,
+      },
+      timestamp: new Date().toISOString(),
+      path: req.path,
     })
     return
   }
@@ -76,8 +82,12 @@ export function errorHandler(
       const field = (error.meta?.target as string[])?.join(', ') || 'field'
       res.status(409).json({
         success: false,
-        error: 'Conflict',
-        message: `A record with this ${field} already exists`,
+        error: {
+          code: 'UNIQUE_CONSTRAINT_VIOLATION',
+          message: `A record with this ${field} already exists`,
+        },
+        timestamp: new Date().toISOString(),
+        path: req.path,
       })
       return
     }
@@ -86,8 +96,12 @@ export function errorHandler(
     if (error.code === 'P2025') {
       res.status(404).json({
         success: false,
-        error: 'Not found',
-        message: 'The requested resource was not found',
+        error: {
+          code: 'NOT_FOUND',
+          message: 'The requested resource was not found',
+        },
+        timestamp: new Date().toISOString(),
+        path: req.path,
       })
       return
     }
@@ -96,8 +110,12 @@ export function errorHandler(
     if (error.code === 'P2003') {
       res.status(400).json({
         success: false,
-        error: 'Bad request',
-        message: 'Invalid reference to related resource',
+        error: {
+          code: 'INVALID_REFERENCE',
+          message: 'Invalid reference to related resource',
+        },
+        timestamp: new Date().toISOString(),
+        path: req.path,
       })
       return
     }
@@ -107,8 +125,12 @@ export function errorHandler(
   if (error instanceof Prisma.PrismaClientValidationError) {
     res.status(400).json({
       success: false,
-      error: 'Validation error',
-      message: 'Invalid data provided',
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid data provided',
+      },
+      timestamp: new Date().toISOString(),
+      path: req.path,
     })
     return
   }
@@ -117,8 +139,12 @@ export function errorHandler(
   if (error.name === 'JsonWebTokenError') {
     res.status(401).json({
       success: false,
-      error: 'Invalid token',
-      message: 'Authentication token is invalid',
+      error: {
+        code: 'INVALID_TOKEN',
+        message: 'Authentication token is invalid',
+      },
+      timestamp: new Date().toISOString(),
+      path: req.path,
     })
     return
   }
@@ -126,8 +152,12 @@ export function errorHandler(
   if (error.name === 'TokenExpiredError') {
     res.status(401).json({
       success: false,
-      error: 'Token expired',
-      message: 'Authentication token has expired',
+      error: {
+        code: 'TOKEN_EXPIRED',
+        message: 'Authentication token has expired',
+      },
+      timestamp: new Date().toISOString(),
+      path: req.path,
     })
     return
   }
@@ -135,10 +165,14 @@ export function errorHandler(
   // Default to 500 server error
   res.status(500).json({
     success: false,
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development'
-      ? error.message
-      : 'Something went wrong',
+    error: {
+      code: 'INTERNAL_ERROR',
+      message: process.env.NODE_ENV === 'development'
+        ? error.message
+        : 'Something went wrong',
+    },
+    timestamp: new Date().toISOString(),
+    path: req.path,
   })
 }
 
@@ -152,8 +186,12 @@ export function notFoundHandler(
 ): void {
   res.status(404).json({
     success: false,
-    error: 'Not found',
-    message: `Cannot ${req.method} ${req.path}`,
+    error: {
+      code: 'ROUTE_NOT_FOUND',
+      message: `Cannot ${req.method} ${req.path}`,
+    },
+    timestamp: new Date().toISOString(),
+    path: req.path,
   })
 }
 

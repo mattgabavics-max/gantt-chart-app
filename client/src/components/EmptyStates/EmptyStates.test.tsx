@@ -5,6 +5,7 @@
 import React from 'react'
 import { render, screen } from '../../test-utils'
 import { fireEvent } from '@testing-library/react'
+import { testA11y } from '../../tests/utils/testA11y'
 import {
   EmptyState,
   NoProjects,
@@ -126,6 +127,21 @@ describe('EmptyState', () => {
     expect(status).toBeInTheDocument()
     expect(status).toHaveAccessibleName('Accessible Title')
   })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<EmptyState title="Test Title" description="Test description" />)
+  })
+
+  it('should have no accessibility violations with action buttons', async () => {
+    await testA11y(
+      <EmptyState
+        title="Title"
+        description="Description"
+        action={{ label: 'Primary', onClick: jest.fn() }}
+        secondaryAction={{ label: 'Secondary', onClick: jest.fn() }}
+      />
+    )
+  })
 })
 
 describe('NoProjects', () => {
@@ -168,6 +184,10 @@ describe('NoProjects', () => {
     render(<NoProjects onCreateProject={jest.fn()} />)
     expect(screen.getByRole('status')).toHaveAccessibleName('No projects yet')
   })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<NoProjects onCreateProject={jest.fn()} />)
+  })
 })
 
 describe('NoTasks', () => {
@@ -208,6 +228,10 @@ describe('NoTasks', () => {
       'No tasks in this project'
     )
   })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<NoTasks onAddTask={jest.fn()} />)
+  })
 })
 
 describe('NoVersions', () => {
@@ -228,6 +252,10 @@ describe('NoVersions', () => {
   it('should be accessible', () => {
     render(<NoVersions onCreateVersion={jest.fn()} />)
     expect(screen.getByRole('status')).toHaveAccessibleName('No saved versions')
+  })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<NoVersions onCreateVersion={jest.fn()} />)
   })
 })
 
@@ -262,6 +290,10 @@ describe('NoSearchResults', () => {
     render(<NoSearchResults searchQuery="test" onClear={jest.fn()} />)
     expect(screen.getByRole('status')).toHaveAccessibleName('No results found')
   })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<NoSearchResults searchQuery="test" onClear={jest.fn()} />)
+  })
 })
 
 describe('NoTeamMembers', () => {
@@ -284,6 +316,10 @@ describe('NoTeamMembers', () => {
     expect(screen.getByRole('status')).toHaveAccessibleName(
       'No team members yet'
     )
+  })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<NoTeamMembers onInvite={jest.fn()} />)
   })
 })
 
@@ -345,6 +381,10 @@ describe('ErrorState', () => {
     const icon = container.querySelector('.text-red-400')
     expect(icon).toBeInTheDocument()
   })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<ErrorState onRetry={jest.fn()} />)
+  })
 })
 
 describe('OfflineState', () => {
@@ -381,6 +421,10 @@ describe('OfflineState', () => {
     const { container } = render(<OfflineState />)
     const icon = container.querySelector('.text-orange-400')
     expect(icon).toBeInTheDocument()
+  })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<OfflineState onRetry={jest.fn()} />)
   })
 })
 
@@ -427,6 +471,10 @@ describe('CompactEmptyState', () => {
     const element = container.querySelector('.py-8.px-4')
     expect(element).toBeInTheDocument()
   })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<CompactEmptyState message="Test message" />)
+  })
 })
 
 describe('PermissionDenied', () => {
@@ -462,5 +510,9 @@ describe('PermissionDenied', () => {
     const { container } = render(<PermissionDenied />)
     const icon = container.querySelector('.text-yellow-400')
     expect(icon).toBeInTheDocument()
+  })
+
+  it('should have no accessibility violations', async () => {
+    await testA11y(<PermissionDenied onGoBack={jest.fn()} />)
   })
 })

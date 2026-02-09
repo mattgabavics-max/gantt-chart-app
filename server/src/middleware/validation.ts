@@ -28,3 +28,6 @@ export function handleValidationErrors(
 
   next()
 }
+
+// Alias for backward compatibility
+export const validate = handleValidationErrors

@@ -4,6 +4,10 @@
 
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
+import { toHaveNoViolations } from 'jest-axe'
+
+// Extend Jest matchers with jest-axe
+expect.extend(toHaveNoViolations)
 
 // Cleanup after each test
 afterEach(() => {
