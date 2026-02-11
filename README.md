@@ -2,6 +2,34 @@
 
 A full-stack Gantt chart application built with React, TypeScript, Express, and PostgreSQL.
 
+---
+
+## 🚀 Quick Start (Simplest Way!)
+
+**Want to get started in 5 minutes?** Use our automated scripts:
+
+### **Windows:**
+```bash
+# One-time setup
+setup.bat
+
+# Start the app
+start.bat
+```
+
+### **Mac/Linux:**
+```bash
+# One-time setup
+chmod +x setup.sh && ./setup.sh
+
+# Start the app
+./start.sh
+```
+
+**Or see:** [QUICKSTART.md](QUICKSTART.md) for detailed quick start guide.
+
+---
+
 ## Tech Stack
 
 ### Frontend
