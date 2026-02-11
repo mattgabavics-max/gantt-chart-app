@@ -18,6 +18,7 @@ import {
   getProjectTasksValidation,
 } from '../validators/task.validator.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
+import { verifyCsrfToken } from '../middleware/csrf.js'
 
 const router = Router()
 
@@ -42,6 +43,7 @@ router.get(
  */
 router.post(
   '/projects/:projectId/tasks',
+  verifyCsrfToken,
   authenticate,
   createTaskValidation,
   validate,
@@ -56,6 +58,7 @@ router.post(
  */
 router.patch(
   '/projects/:projectId/tasks/bulk',
+  verifyCsrfToken,
   authenticate,
   bulkUpdateTasksValidation,
   validate,
@@ -70,6 +73,7 @@ router.patch(
  */
 router.put(
   '/tasks/:id',
+  verifyCsrfToken,
   authenticate,
   updateTaskValidation,
   validate,
@@ -84,6 +88,7 @@ router.put(
  */
 router.patch(
   '/tasks/:id/position',
+  verifyCsrfToken,
   authenticate,
   updateTaskPositionValidation,
   validate,
@@ -98,6 +103,7 @@ router.patch(
  */
 router.delete(
   '/tasks/:id',
+  verifyCsrfToken,
   authenticate,
   deleteTaskValidation,
   validate,

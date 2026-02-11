@@ -98,6 +98,7 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json',
       },
+      withCredentials: true, // Send cookies with requests
     })
 
     this.setupInterceptors()
@@ -106,13 +107,24 @@ class ApiClient {
   // ==================== Interceptors ====================
 
   private setupInterceptors(): void {
-    // Request interceptor - Add auth token
+    // Request interceptor - Add auth token and CSRF token
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
+        // Add auth token from localStorage (backwards compatibility)
         const token = tokenManager.getToken()
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`
         }
+
+        // Add CSRF token for state-changing requests
+        const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE']
+        if (config.method && unsafeMethods.includes(config.method.toUpperCase())) {
+          const csrfToken = this.getCsrfTokenFromCookie()
+          if (csrfToken && config.headers) {
+            config.headers['x-csrf-token'] = csrfToken
+          }
+        }
+
         return config
       },
       (error: AxiosError) => {
@@ -246,6 +258,20 @@ class ApiClient {
     tokenManager.clearAll()
     // Emit custom event for auth context to handle
     window.dispatchEvent(new CustomEvent('auth:logout'))
+  }
+
+  /**
+   * Get CSRF token from cookie
+   */
+  private getCsrfTokenFromCookie(): string | null {
+    const cookies = document.cookie.split(';')
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=')
+      if (name === 'gantt_csrf_token') {
+        return decodeURIComponent(value)
+      }
+    }
+    return null
   }
 
   // ==================== Auth Endpoints ====================

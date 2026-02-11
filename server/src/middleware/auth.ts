@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { extractTokenFromHeader, verifyToken, JwtPayload } from '../utils/jwt.js'
 import prisma from '../config/database.js'
+import { isTokenBlacklisted } from '../services/tokenBlacklist.js'
+import { getAuthCookieToken } from '../utils/cookies.js'
 
 // Extend Express Request type to include user
 declare global {
@@ -24,14 +26,26 @@ export async function authenticate(
   next: NextFunction
 ): Promise<void> {
   try {
-    // Extract token from Authorization header
-    const token = extractTokenFromHeader(req.headers.authorization)
+    // Extract token from Authorization header or cookies
+    const headerToken = extractTokenFromHeader(req.headers.authorization)
+    const cookieToken = getAuthCookieToken(req)
+    const token = headerToken || cookieToken
 
     if (!token) {
       res.status(401).json({
         success: false,
         error: 'Authentication required',
         message: 'No token provided',
+      })
+      return
+    }
+
+    // Check if token is blacklisted (revoked)
+    if (isTokenBlacklisted(token)) {
+      res.status(401).json({
+        success: false,
+        error: 'Token revoked',
+        message: 'This token has been revoked. Please login again.',
       })
       return
     }
@@ -89,11 +103,19 @@ export async function optionalAuthenticate(
   next: NextFunction
 ): Promise<void> {
   try {
-    // Extract token from Authorization header
-    const token = extractTokenFromHeader(req.headers.authorization)
+    // Extract token from Authorization header or cookies
+    const headerToken = extractTokenFromHeader(req.headers.authorization)
+    const cookieToken = getAuthCookieToken(req)
+    const token = headerToken || cookieToken
 
     // If no token, continue without authentication
     if (!token) {
+      next()
+      return
+    }
+
+    // Check if token is blacklisted (revoked)
+    if (isTokenBlacklisted(token)) {
       next()
       return
     }

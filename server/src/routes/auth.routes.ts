@@ -1,10 +1,11 @@
 import { Router } from 'express'
 import rateLimit from 'express-rate-limit'
-import { register, login, getCurrentUser, verifyToken } from '../controllers/auth.controller.js'
+import { register, login, logout, getCurrentUser, verifyToken } from '../controllers/auth.controller.js'
 import { registerValidation, loginValidation } from '../validators/auth.validator.js'
 import { handleValidationErrors } from '../middleware/validation.js'
 import { authenticate } from '../middleware/auth.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
+import { verifyCsrfToken } from '../middleware/csrf.js'
 
 const router = Router()
 
@@ -43,6 +44,7 @@ const generalAuthLimiter = rateLimit({
  */
 router.post(
   '/register',
+  verifyCsrfToken,
   authLimiter,
   registerValidation,
   handleValidationErrors,
@@ -56,6 +58,7 @@ router.post(
  */
 router.post(
   '/login',
+  verifyCsrfToken,
   authLimiter,
   loginValidation,
   handleValidationErrors,
@@ -84,6 +87,19 @@ router.get(
   generalAuthLimiter,
   authenticate,
   asyncHandler(verifyToken)
+)
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user and revoke JWT token
+ * @access  Private
+ */
+router.post(
+  '/logout',
+  verifyCsrfToken,
+  generalAuthLimiter,
+  authenticate,
+  asyncHandler(logout)
 )
 
 export default router

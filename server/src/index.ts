@@ -1,5 +1,7 @@
 import express from 'express'
 import dotenv from 'dotenv'
+import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import corsMiddleware from './middleware/cors.js'
 import routes from './routes/index.js'
 import authRoutes from './routes/auth.routes.js'
@@ -8,16 +10,44 @@ import versionRoutes from './routes/version.routes.js'
 import taskRoutes from './routes/task.routes.js'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js'
 import { connectDatabase } from './config/database.js'
+import { setCsrfToken } from './middleware/csrf.js'
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Middleware
+// Security Middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Disable for development
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+}))
+
+// Other Middleware
 app.use(corsMiddleware)
+app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// CSRF Protection - Set token for all requests
+app.use(setCsrfToken)
 
 // Health check
 app.get('/api/health', (req, res) => {

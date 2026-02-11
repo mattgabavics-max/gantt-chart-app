@@ -14,6 +14,7 @@ import {
   deleteVersionValidation,
 } from '../validators/version.validator.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
+import { verifyCsrfToken } from '../middleware/csrf.js'
 
 const router = Router({ mergeParams: true }) // mergeParams to access :id from parent router
 
@@ -38,6 +39,7 @@ router.get(
  */
 router.post(
   '/',
+  verifyCsrfToken,
   authenticate,
   createVersionValidation,
   validate,
@@ -64,6 +66,7 @@ router.get(
  */
 router.delete(
   '/:versionNumber',
+  verifyCsrfToken,
   authenticate,
   deleteVersionValidation,
   validate,

@@ -116,9 +116,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await api.login(credentials)
       const { token, refreshToken, user } = response.data
 
-      // Store tokens
-      tokenManager.setToken(token)
-      tokenManager.setRefreshToken(refreshToken)
+      // Store tokens if provided (backwards compatibility)
+      // New backend sends HttpOnly cookies instead
+      if (token) {
+        tokenManager.setToken(token)
+      }
+      if (refreshToken) {
+        tokenManager.setRefreshToken(refreshToken)
+      }
 
       setState({
         user,
@@ -150,9 +155,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await api.register(data)
       const { token, refreshToken, user } = response.data
 
-      // Store tokens
-      tokenManager.setToken(token)
-      tokenManager.setRefreshToken(refreshToken)
+      // Store tokens if provided (backwards compatibility)
+      // New backend sends HttpOnly cookies instead
+      if (token) {
+        tokenManager.setToken(token)
+      }
+      if (refreshToken) {
+        tokenManager.setRefreshToken(refreshToken)
+      }
 
       setState({
         user,

@@ -16,6 +16,7 @@ import {
   listProjectsValidation,
 } from '../validators/project.validator.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
+import { verifyCsrfToken } from '../middleware/csrf.js'
 
 const router = Router()
 
@@ -39,6 +40,7 @@ router.get(
  */
 router.post(
   '/',
+  verifyCsrfToken,
   authenticate,
   createProjectValidation,
   validate,
@@ -66,6 +68,7 @@ router.get(
  */
 router.put(
   '/:id',
+  verifyCsrfToken,
   authenticate,
   updateProjectValidation,
   validate,
@@ -79,6 +82,7 @@ router.put(
  */
 router.delete(
   '/:id',
+  verifyCsrfToken,
   authenticate,
   deleteProjectValidation,
   validate,

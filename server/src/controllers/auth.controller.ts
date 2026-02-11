@@ -1,8 +1,11 @@
 import { Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
 import prisma from '../config/database.js'
 import { hashPassword, comparePassword, validatePasswordStrength } from '../utils/password.js'
-import { generateToken } from '../utils/jwt.js'
+import { generateToken, extractTokenFromHeader } from '../utils/jwt.js'
 import { ConflictError, UnauthorizedError, BadRequestError } from '../middleware/errorHandler.js'
+import { blacklistToken } from '../services/tokenBlacklist.js'
+import { setAuthCookie, clearAuthCookies } from '../utils/cookies.js'
 
 /**
  * Register a new user
@@ -50,12 +53,14 @@ export async function register(req: Request, res: Response): Promise<void> {
     email: user.email,
   })
 
+  // Set HttpOnly cookie
+  setAuthCookie(res, token)
+
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
     data: {
       user,
-      token,
     },
   })
 }
@@ -89,6 +94,9 @@ export async function login(req: Request, res: Response): Promise<void> {
     email: user.email,
   })
 
+  // Set HttpOnly cookie
+  setAuthCookie(res, token)
+
   res.status(200).json({
     success: true,
     message: 'Login successful',
@@ -98,7 +106,6 @@ export async function login(req: Request, res: Response): Promise<void> {
         email: user.email,
         createdAt: user.createdAt,
       },
-      token,
     },
   })
 }
@@ -144,5 +151,42 @@ export async function verifyToken(req: Request, res: Response): Promise<void> {
     data: {
       user: req.user,
     },
+  })
+}
+
+/**
+ * Logout user (revoke current JWT token)
+ * POST /api/auth/logout
+ */
+export async function logout(req: Request, res: Response): Promise<void> {
+  // Try to get token from Authorization header (for backwards compatibility)
+  // or from cookies (new method)
+  const headerToken = extractTokenFromHeader(req.headers.authorization)
+  const cookieToken = req.cookies?.gantt_auth_token
+
+  const token = headerToken || cookieToken
+
+  if (token) {
+    try {
+      // Decode token to get expiry time
+      const decoded = jwt.decode(token) as jwt.JwtPayload
+
+      if (decoded && decoded.exp) {
+        // Add token to blacklist until it naturally expires
+        const expiresAt = decoded.exp * 1000 // Convert to milliseconds
+        blacklistToken(token, expiresAt)
+      }
+    } catch (error) {
+      // Ignore errors, still clear cookies
+      console.error('Error blacklisting token:', error)
+    }
+  }
+
+  // Clear auth cookies
+  clearAuthCookies(res)
+
+  res.status(200).json({
+    success: true,
+    message: 'Logout successful',
   })
 }
