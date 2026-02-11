@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import prisma from '../config/database.js'
-import { NotFoundError, ForbiddenError, BadRequestError } from '../middleware/errorHandler.js'
+import { NotFoundError, ForbiddenError } from '../middleware/errorHandler.js'
 
 /**
  * Get all projects for authenticated user with pagination

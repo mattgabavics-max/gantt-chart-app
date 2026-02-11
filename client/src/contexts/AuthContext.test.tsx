@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { render, renderHook, act, waitFor } from '@testing-library/react'
 import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth, ProtectedRoute } from './AuthContext'
 import { api, tokenManager } from '../services/api'

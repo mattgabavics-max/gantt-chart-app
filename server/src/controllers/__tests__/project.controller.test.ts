@@ -32,7 +32,7 @@ jest.mock('../../config/database', () => ({
   },
 }))
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockPrisma = prisma as any
 
 // Mock Request and Response
 const mockRequest = (overrides?: Partial<Request>): Request =>

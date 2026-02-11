@@ -33,6 +33,16 @@ module.exports = {
     '^.+\\.(js|mjs)$': ['babel-jest'],
   },
 
+  // Global variables
+  globals: {
+    'import.meta': {
+      env: {
+        VITE_API_BASE_URL: 'http://localhost:5000/api',
+        VITE_ENVIRONMENT: 'test',
+      },
+    },
+  },
+
   // Module name mapper for CSS and assets
   moduleNameMapper: {
     '^msw/node$': '<rootDir>/../node_modules/msw/lib/node/index.js',
